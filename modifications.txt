@@ -1,0 +1,296 @@
+70 results - 20 files
+
+Gconfig.ghost:
+  1: x86_64:CONFIG_SCHED_CLASS_GHOST=y
+  2  x86_64 and debug:CONFIG_DEBUG_GHOST=y
+
+arch/x86/include/asm/preempt.h:
+   96  
+   97: #ifdef CONFIG_SCHED_CLASS_GHOST
+   98  extern void ghost_commit_greedy_txn(void);
+
+  105  {
+  106: #ifdef CONFIG_SCHED_CLASS_GHOST
+  107  	ghost_commit_greedy_txn();
+
+fs/timerfd.c:
+   46  	bool might_cancel;
+   47: #ifdef CONFIG_SCHED_CLASS_GHOST
+   48  	struct __kernel_timerfd_ghost timerfd_ghost;
+
+   69  
+   70: #ifdef CONFIG_SCHED_CLASS_GHOST
+   71  	struct __kernel_timerfd_ghost timerfd_ghost = {
+
+   79  	wake_up_locked_poll(&ctx->wqh, EPOLLIN);
+   80: #ifdef CONFIG_SCHED_CLASS_GHOST
+   81  	if (unlikely(&ctx->timerfd_ghost.enabled))
+
+   85  
+   86: #ifdef CONFIG_SCHED_CLASS_GHOST
+   87  	if (unlikely(timerfd_ghost.enabled))
+
+  455  
+  456: #ifdef CONFIG_SCHED_CLASS_GHOST
+  457  int do_timerfd_settime(int ufd, int flags, const struct itimerspec64 *new,
+
+  527  	ret = timerfd_setup(ctx, flags, new);
+  528: #ifdef CONFIG_SCHED_CLASS_GHOST
+  529  	if (ktfd)
+
+  579  		return -EFAULT;
+  580: #ifdef CONFIG_SCHED_CLASS_GHOST
+  581  	ret = do_timerfd_settime(ufd, flags, &new, &old, NULL);
+
+  611  		return -EFAULT;
+  612: #ifdef CONFIG_SCHED_CLASS_GHOST
+  613  	ret = do_timerfd_settime(ufd, flags, &new, &old, NULL);
+
+fs/proc/base.c:
+  3158  
+  3159: #ifdef CONFIG_SCHED_CLASS_GHOST
+  3160  static const struct file_operations proc_ghost_dir_operations;
+
+  3273  #endif
+  3274: #ifdef CONFIG_SCHED_CLASS_GHOST
+  3275  	DIR("ghost",	S_IRUGO|S_IXUGO, proc_ghost_dir_inode_operations,
+
+  3843  
+  3844: #ifdef CONFIG_SCHED_CLASS_GHOST
+  3845  
+
+include/asm-generic/vmlinux.lds.h:
+  127   */
+  128: #ifdef CONFIG_SCHED_CLASS_GHOST
+  129  #define SCHED_DATA				\
+
+  425  
+  426: #ifdef CONFIG_SCHED_CLASS_GHOST
+  427  #define	GHOST_ABI_RODATA		\
+
+include/linux/bpf_types.h:
+  79  #endif
+  80: #ifdef CONFIG_SCHED_CLASS_GHOST
+  81  BPF_PROG_TYPE(BPF_PROG_TYPE_GHOST_SCHED, ghost_sched, struct bpf_ghost_sched,
+
+include/linux/sched.h:
+   586  
+   587: #ifdef CONFIG_SCHED_CLASS_GHOST
+   588  struct ghost_queue;
+
+   779  	struct sched_rt_entity		rt;
+   780: #ifdef CONFIG_SCHED_CLASS_GHOST
+   781  	int64_t gtid;			/* ghost tid */
+
+  1894  {
+  1895: #ifdef CONFIG_SCHED_CLASS_GHOST
+  1896  	/*
+
+include/linux/sched/sysctl.h:
+  33  
+  34: #ifdef CONFIG_SCHED_CLASS_GHOST
+  35  extern unsigned long sysctl_ghost_cfs_load_added;
+
+init/Kconfig:
+  2358  
+  2359: config SCHED_CLASS_GHOST
+  2360  	bool "ghOSt scheduling class"
+
+  2368  	bool "Extra debug checks for ghOSt."
+  2369: 	depends on SCHED_CLASS_GHOST
+  2370  	default n
+
+kernel/fork.c:
+  2319  
+  2320: #ifdef CONFIG_SCHED_CLASS_GHOST
+  2321  	p->gtid = ghost_alloc_gtid(p);
+
+kernel/sysctl.c:
+  3149  #endif
+  3150: #ifdef CONFIG_SCHED_CLASS_GHOST
+  3151  	{
+
+kernel/bpf/btf.c:
+  28  
+  29: #ifdef CONFIG_SCHED_CLASS_GHOST
+  30  #include <uapi/linux/ghost.h>
+
+kernel/bpf/syscall.c:
+  1930  {
+  1931: #ifdef CONFIG_SCHED_CLASS_GHOST
+  1932  	BUILD_BUG_ON(__MAX_BPF_GHOST_ATTACH_TYPE > 0xFFFF);
+
+  2093  
+  2094: #ifdef CONFIG_SCHED_CLASS_GHOST
+  2095  	if (current->group_leader->ghost.bpf_cannot_load_prog)
+
+  2932  {
+  2933: #ifdef CONFIG_SCHED_CLASS_GHOST
+  2934  	BUILD_BUG_ON(__MAX_BPF_GHOST_ATTACH_TYPE > 0xFFFF);
+
+  4096  #endif
+  4097: #ifdef CONFIG_SCHED_CLASS_GHOST
+  4098  	case BPF_PROG_TYPE_GHOST_SCHED:
+
+kernel/entry/common.c:
+   10  
+   11: #ifdef CONFIG_SCHED_CLASS_GHOST
+   12  #include <uapi/linux/ghost.h>
+
+  190  		local_irq_disable_exit_to_user();
+  191: #ifdef CONFIG_SCHED_CLASS_GHOST
+  192  		ghost_commit_greedy_txn();
+
+  205  	lockdep_assert_irqs_disabled();
+  206: #ifdef CONFIG_SCHED_CLASS_GHOST
+  207  	ghost_commit_greedy_txn();
+
+kernel/sched/core.c:
+   349  
+   350: #ifdef CONFIG_SCHED_CLASS_GHOST
+   351  	ghost_tick(rq);
+
+  1763  	}
+  1764: #ifdef CONFIG_SCHED_CLASS_GHOST
+  1765  	else if (&ghost_agent_sched_class > rq->curr->sched_class &&
+
+  2426  	 */
+  2427: #ifdef CONFIG_SCHED_CLASS_GHOST
+  2428  	/* ghost agents do not allow affinity manipulations. */
+
+  2777  		smp_send_reschedule(cpu);
+  2778: #ifdef CONFIG_SCHED_CLASS_GHOST
+  2779  	/*
+
+  2906  
+  2907: #ifdef CONFIG_SCHED_CLASS_GHOST
+  2908  	if (task_has_ghost_policy(p)) {
+
+  3732  
+  3733: #ifdef CONFIG_SCHED_CLASS_GHOST
+  3734  	p->inhibit_task_msgs = 0;
+
+  3907  
+  3908: #ifdef CONFIG_SCHED_CLASS_GHOST
+  3909  	if (task_has_ghost_policy(p)) {
+
+  3968  {
+  3969: #ifdef CONFIG_SCHED_CLASS_GHOST
+  3970  	if (task_has_ghost_policy(p))
+
+  4307  	kmap_local_sched_out();
+  4308: #ifdef CONFIG_SCHED_CLASS_GHOST
+  4309  	ghost_prepare_task_switch(rq, prev, next);
+
+  4424  {
+  4425: #ifdef CONFIG_SCHED_CLASS_GHOST
+  4426  	if (unlikely(ghost_need_rendezvous(rq)))
+
+  4742  
+  4743: #ifdef CONFIG_SCHED_CLASS_GHOST
+  4744  	ghost_tick(rq);
+
+  5075  
+  5076: #ifdef CONFIG_SCHED_CLASS_GHOST
+  5077  	ghost_pnt_prologue(rq, prev, rf);
+
+  5120  out_return:
+  5121: #ifdef CONFIG_SCHED_CLASS_GHOST
+  5122  	/*
+
+  5378  
+  5379: #ifdef CONFIG_SCHED_CLASS_GHOST
+  5380  void ghost_agent_schedule(void)
+
+  5946  
+  5947: #ifdef CONFIG_SCHED_CLASS_GHOST
+  5948  	if (ghost_policy(policy)) {
+
+  5991  
+  5992: #ifdef CONFIG_SCHED_CLASS_GHOST
+  5993  	if (ghost_policy(attr->sched_policy)) {
+
+  6054  
+  6055: #ifdef CONFIG_SCHED_CLASS_GHOST
+  6056  	if (ghost_policy(policy)) {
+
+  6175  
+  6176: #ifdef CONFIG_SCHED_CLASS_GHOST
+  6177  		/*
+
+  6241  
+  6242: #ifdef CONFIG_SCHED_CLASS_GHOST
+  6243  	if (ghost_policy(policy) || ghost_policy(p->policy)) {
+
+  6266  		new_effective_prio = rt_effective_prio(p, newprio);
+  6267: #ifdef CONFIG_SCHED_CLASS_GHOST
+  6268  		if (!ghost_policy(policy) && !ghost_policy(oldpolicy) &&
+
+  7972  	init_sched_dl_class();
+  7973: #ifdef CONFIG_SCHED_CLASS_GHOST
+  7974  	init_sched_ghost_class();
+
+  8023  	       &rt_sched_class + 1   != &dl_sched_class);
+  8024: #ifdef CONFIG_SCHED_CLASS_GHOST
+  8025  	BUG_ON(&idle_sched_class + 1 != &ghost_sched_class ||
+
+  8106  		init_dl_rq(&rq->dl);
+  8107: #ifdef CONFIG_SCHED_CLASS_GHOST
+  8108  		init_ghost_rq(&rq->ghost);
+
+kernel/sched/fair.c:
+  6853  {
+  6854: #ifdef CONFIG_SCHED_CLASS_GHOST
+  6855  	if (rq_adj_nr_running(rq))
+
+  7154  		return NULL;
+  7155: #ifdef CONFIG_SCHED_CLASS_GHOST
+  7156  	if (skip_fair_idle_balance(cfs_rq, prev))
+
+kernel/sched/ghost_abi_helper.sh:
+  90  cat > ${snapshot_dir}/Makefile << EOF
+  91: obj-\$(CONFIG_SCHED_CLASS_GHOST) += ghost.o
+  92  CFLAGS_ghost.o += -I\$(srctree)/fs/kernfs -I\$(srctree)/kernel/sched
+
+  95  cat >> ${sched_dir}/Makefile << EOF
+  96: obj-\$(CONFIG_SCHED_CLASS_GHOST) += ghost_abi_${abi}/
+  97  EOF
+
+kernel/sched/idle.c:
+  275  
+  276: #ifdef CONFIG_SCHED_CLASS_GHOST
+  277  	/* Sets need_resched if rq->ghost.dont_idle_once is set */
+
+kernel/sched/Makefile:
+  39  CFLAGS_ghost.o += -I$(srctree)/fs/kernfs
+  40: obj-$(CONFIG_SCHED_CLASS_GHOST) += ghost.o
+  41: obj-$(CONFIG_SCHED_CLASS_GHOST) += ghost_core.o
+
+kernel/sched/sched.h:
+   102  
+   103: #ifdef CONFIG_SCHED_CLASS_GHOST
+   104  
+
+   218  static inline unsigned long ghost_cfs_added_load(struct rq *rq) { return 0; }
+   219: #endif	/* CONFIG_SCHED_CLASS_GHOST */
+   220  
+
+   550  
+   551: #ifdef CONFIG_SCHED_CLASS_GHOST
+   552  	bool ghost_enabled;
+
+  1204  
+  1205: #ifdef CONFIG_SCHED_CLASS_GHOST
+  1206  	struct ghost_rq ghost;
+
+  2080  extern const struct sched_class idle_sched_class;
+  2081: #ifdef CONFIG_SCHED_CLASS_GHOST
+  2082  extern const struct sched_class ghost_agent_sched_class;
+
+  2316  void ghost_agent_schedule(void);
+  2317: #endif	/* CONFIG_SCHED_CLASS_GHOST */
+  2318  
+
+  2493  {
+  2494: #ifdef CONFIG_SCHED_CLASS_GHOST
+  2495  	int agent_active = 0;
