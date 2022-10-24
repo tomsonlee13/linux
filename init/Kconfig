@@ -2355,3 +2355,18 @@ config ARCH_HAS_SYNC_CORE_BEFORE_USERMODE
 # <asm/syscall_wrapper.h>.
 config ARCH_HAS_SYSCALL_WRAPPER
 	def_bool n
+
+config SCHED_CLASS_DFA
+	bool "DFA scheduling class"
+	depends on X86_64
+	default n
+	help
+	  DFA is a scheduling class with policy decisions delegated
+	  to a user-space agent.
+
+config DEBUG_DFA
+	bool "Extra debug checks for DFA."
+	depends on SCHED_CLASS_DFA
+	default n
+	help
+	  Enable extra runtime debug checks for DFA.
