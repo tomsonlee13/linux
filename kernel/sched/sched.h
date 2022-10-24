@@ -2073,68 +2073,7 @@ static inline bool is_agent(struct rq *rq, struct task_struct *p)
 	return false;
 }
 
-/*
- * Contents of rq->ghost.rendezvous field: <sign|cpu_num|poison|counter>
- *
- * We have 1 bit for <sign>, 11 bits for <cpu_num>, 1 bit for <poison> and
- * 51 bits for <counter>
- *
- * Assuming a call rate of once per usec we get ~71 years before
- * the 51-bit counter overflows.
- */
-#define GHOST_NO_RENDEZVOUS		0
-#define GHOST_POISONED_RENDEZVOUS	(1LL << 51)
-
-static inline bool rendezvous_reached(int64_t target)
-{
-	return target >= 0;
-}
-
-static inline bool rendezvous_poisoned(int64_t target)
-{
-	if (rendezvous_reached(target)) {
-		/*
-		 * We must have reached rendezvous before evaluating whether
-		 * or not it is poisoned. This is actually an important check
-		 * to avoid a false positive (an in-progress rendezvous is a
-		 * negative number and GHOST_POISONED_RENDEZVOUS bit is set).
-		 *
-		 * For e.g. -2 is 0xfffffffffffffffe
-		 */
-		return target & GHOST_POISONED_RENDEZVOUS;
-	}
-	return false;
-}
-
-static inline bool ghost_need_rendezvous(struct rq *rq)
-{
-	int64_t r;
-
-	if (!ghost_class(rq->curr->sched_class))
-		return false;
-
-	r = smp_load_acquire(&rq->ghost.rendezvous);
-	return !rendezvous_reached(r) || rendezvous_poisoned(r);
-}
-
-static inline bool skip_fair_idle_balance(struct cfs_rq *cfs_rq,
-					  struct task_struct *prev)
-{
-	/*
-	 * Skip fair idle balance iff:
-	 * - there are no runnable CFS tasks on this cpu.
-	 * - CFS was not already running on this cpu.
-	 *
-	 * In other words avoid attracting CFS tasks when a cpu is traversing
-	 * the ghost->idle or idle->ghost edges.
-	 */
-	if (!cfs_rq->nr_running && prev->sched_class != &fair_sched_class)
-		return true;
-	else
-		return false;
-}
-
-/* ghost tid */
+/* dfa tid */
 typedef int64_t gtid_t;
 
 /*
@@ -2257,7 +2196,7 @@ int64_t ghost_sync_group_cookie(void);
 void ghost_wait_for_rendezvous(struct rq *rq);
 void ghost_pnt_prologue(struct rq *rq, struct task_struct *prev,
 			struct rq_flags *rf);
-void ghost_tick(struct rq *rq);
+void dfa_tick(struct rq *rq);
 
 int ghost_setscheduler(struct task_struct *p, struct rq *rq,
 		       const struct sched_attr *attr,
@@ -2274,7 +2213,7 @@ static inline int enclave_abi(const struct ghost_enclave *e)
 
 void ghost_prepare_task_switch(struct rq *rq, struct task_struct *prev,
 			       struct task_struct *next);
-void ghost_cpu_idle(void);
+void dfa_cpu_idle(void);
 
 unsigned long ghost_cfs_added_load(struct rq *rq);
 int64_t ghost_alloc_gtid(struct task_struct *p);
@@ -2288,7 +2227,7 @@ void ghost_switchto(struct rq *rq, struct task_struct *prev,
 #endif
 
 /* ghost functions in core.c */
-void ghost_agent_schedule(void);
+void dfa_agent_schedule(void);
 #endif	/* CONFIG_SCHED_CLASS_GHOST */
 
 static inline bool sched_stop_runnable(struct rq *rq)

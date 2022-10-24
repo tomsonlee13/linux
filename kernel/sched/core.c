@@ -347,6 +347,9 @@ static enum hrtimer_restart hrtick(struct hrtimer *timer)
 	rq->curr->sched_class->task_tick(rq, rq->curr, 1);
 	rq_unlock(rq, &rf);
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+	dfa_tick(rq);
+#endif
 	return HRTIMER_NORESTART;
 }
 
@@ -1709,6 +1712,22 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		rq->curr->sched_class->check_preempt_curr(rq, p, flags);
 	else if (p->sched_class > rq->curr->sched_class)
 		resched_curr(rq);
+	
+#ifdef CONFIG_SCHED_CLASS_DFA
+	else if (&dfa_agent_sched_class > rq->curr->sched_class &&
+		 is_agent(rq, p)) {
+		/*
+		 * Normally, ghost threads have the lowest
+		 * priority. The ghost agent thread, however, is
+		 * allowed to run in the higher priority ghost
+		 * agent class when it would otherwise be
+		 * preempted by another sched_class. See
+		 * GHOST_SW_BOOST_PRIO for more details.
+		 */
+		printk(KERN_INFO "dfa is agent");
+		resched_curr(rq);
+	}
+#endif
 
 	/*
 	 * A queue event has occurred, and we're going to schedule.  In
@@ -2358,6 +2377,14 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 	 * Must re-check here, to close a race against __kthread_bind(),
 	 * sched_setaffinity() is not guaranteed to observe the flag.
 	 */
+#ifdef CONFIG_SCHED_CLASS_DFA
+	/* ghost agents do not allow affinity manipulations. */
+	// if (p->sched_class == &ghost_sched_class && p->ghost.agent) {
+	// 	ret = -EINVAL;
+	// 	goto out;
+	// }
+	printk(KERN_INFO "dfa affinity");
+#endif
 	if ((flags & SCA_CHECK) && (p->flags & PF_NO_SETAFFINITY)) {
 		ret = -EINVAL;
 		goto out;
@@ -2702,6 +2729,27 @@ void kick_process(struct task_struct *p)
 	cpu = task_cpu(p);
 	if ((cpu != smp_processor_id()) && task_curr(p))
 		smp_send_reschedule(cpu);
+#ifdef CONFIG_SCHED_CLASS_DFA
+	/*
+	 * When an agent is 'blocked_in_run' its 'task->state' is TASK_RUNNING
+	 * so it won't be "woken up" when a signal is delivered to it (see
+	 * signal_wake_up_state() for details). This in turn implies that
+	 * the signal handling is delayed until there is a scheduling edge
+	 * on the agent's CPU (see pick_agent() for details).
+	 *
+	 * Ensure timely signal handling by forcing a scheduling edge on
+	 * the agent's CPU.
+	 */
+	// else if (unlikely(p->ghost.agent && signal_pending(p))) {
+	// 	if (cpu == smp_processor_id()) {
+	// 		set_tsk_need_resched(current);
+	// 		set_preempt_need_resched();
+	// 	} else {
+	// 		resched_cpu_unlocked(cpu);
+	// 	}
+	// }
+	printk(KERN_INFO "dfa kick process");
+#endif
 	preempt_enable();
 }
 EXPORT_SYMBOL_GPL(kick_process);
@@ -2811,6 +2859,50 @@ int select_task_rq(struct task_struct *p, int cpu, int wake_flags)
 {
 	lockdep_assert_held(&p->pi_lock);
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+	// if (task_has_ghost_policy(p)) {
+	// 	/*
+	// 	 * Agents must always stay on the rq of their pinned cpu.
+	// 	 */
+	// 	if (p->ghost.agent)
+	// 		return task_cpu(p);
+	// 	/*
+	// 	 * ghost ignores p->cpus_allowed when it latches task, so we
+	// 	 * only ever want to call select_task_rq_ghost().
+	// 	 *
+	// 	 * select_task_rq() doesn't affect where a task will run next -
+	// 	 * the agent decides that.  Instead, it decides where a task
+	// 	 * wakes up.  The rq is more of a temporary staging ground, and
+	// 	 * the agent maintains the 'real' runqueue(s).
+	// 	 *
+	// 	 * You might be tempted to let the agent pick any cpu here, but
+	// 	 * that is dangerous.  Since we use TTWU_QUEUE, we'll send a
+	// 	 * resched IPI to that cpu, and the wakeup (ttwu_do_activate())
+	// 	 * will happen in IRQ context.  It's possible to overload a cpu
+	// 	 * with resched IPIs, so long as that cpu's *execution* is not
+	// 	 * required for the wake-run-block-wake loop.  i.e. it is stuck
+	// 	 * handling IPIs for wakeups, and other cpus latch and run the
+	// 	 * task, generating an endless stream of wakeup IPIs.  This is
+	// 	 * exacerbated by bpf-msg, but could happen with enough cpus
+	// 	 * waking tasks or with some inefficient/unscalable
+	// 	 * sched_class->task_woken().
+	// 	 *
+	// 	 * There are two 'safe' cpus to select: our current cpu, which
+	// 	 * won't require an IPI, and task_cpu(p).  task_cpu will change
+	// 	 * once a task runs, so if a victim cpu is overloaded and
+	// 	 * another cpu runs the task, that cpu becomes task_cpu,
+	// 	 * breaking the endless stream.
+	// 	 */
+	// 	cpu = select_task_rq_ghost(p, cpu, wake_flags);
+	// 	if (WARN_ON_ONCE(cpu != task_cpu(p)
+	// 			 && cpu != smp_processor_id()))
+	// 		cpu = smp_processor_id();
+	// 	if (!cpu_online(cpu))
+	// 		cpu = smp_processor_id();
+	// 	return cpu;
+	printk(KERN_INFO "dfa select task rq");
+	}
+#endif
 	if (p->nr_cpus_allowed > 1 && !is_migration_disabled(p))
 		cpu = p->sched_class->select_task_rq(p, cpu, wake_flags);
 	else
@@ -3582,6 +3674,13 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	p->rt.on_rq		= 0;
 	p->rt.on_list		= 0;
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+	// p->inhibit_task_msgs = 0;
+	// INIT_LIST_HEAD(&p->inhibited_task_list);
+	// sched_ghost_entity_init(p);
+	printk(KERN_INFO "sched forked");
+#endif
+
 #ifdef CONFIG_PREEMPT_NOTIFIERS
 	INIT_HLIST_HEAD(&p->preempt_notifiers);
 #endif
@@ -3734,7 +3833,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	 * Revert to default priority/policy on fork if requested.
 	 */
 	if (unlikely(p->sched_reset_on_fork)) {
-		if (task_has_dl_policy(p) || task_has_rt_policy(p)) {
+		if (task_has_dl_policy(p) || task_has_rt_policy(p) || task_has_dfa_policy(p)) {
 			p->policy = SCHED_NORMAL;
 			p->static_prio = NICE_TO_PRIO(0);
 			p->rt_priority = 0;
@@ -3751,6 +3850,19 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 		p->sched_reset_on_fork = 0;
 	}
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+	if (task_has_ghost_policy(p)) {
+		// int error;
+
+		// p->sched_class = &ghost_sched_class;
+		// error = ghost_sched_fork(p);
+		// if (error) {
+		// 	put_cpu();
+		// 	return error;
+		// }
+		printk(KERN_INFO "task_has_ghost_policy");
+	} else
+#endif
 	if (dl_prio(p->prio))
 		return -EAGAIN;
 	else if (rt_prio(p->prio))
@@ -4130,6 +4242,10 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 	rseq_preempt(prev);
 	fire_sched_out_preempt_notifiers(prev, next);
 	kmap_local_sched_out();
+#ifdef CONFIG_SCHED_CLASS_DFA
+	// ghost_prepare_task_switch(rq, prev, next);
+	printk(KERN_INFO "dfa prepare task switch");
+#endif
 	prepare_task(next);
 	prepare_arch_switch(next);
 }
@@ -4242,6 +4358,14 @@ static struct rq *finish_task_switch(struct task_struct *prev)
 	return rq;
 }
 
+void schedule_callback(struct rq *rq)
+{
+#ifdef CONFIG_SCHED_CLASS_DFA
+	// if (unlikely(ghost_need_rendezvous(rq)))
+	// 	ghost_wait_for_rendezvous(rq);
+	printk(KERN_INFO "schedule_callback DFA")
+#endif
+}
 /**
  * schedule_tail - first thing a freshly forked thread must call.
  * @prev: the thread we just switched away from.
@@ -4261,6 +4385,7 @@ asmlinkage __visible void schedule_tail(struct task_struct *prev)
 	 */
 
 	rq = finish_task_switch(prev);
+	schedule_callback(rq); //DFA
 	preempt_enable();
 
 	if (current->set_child_tid)
@@ -4553,6 +4678,9 @@ void scheduler_tick(void)
 
 	perf_event_task_tick();
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+	dfa_tick(rq);
+#endif
 #ifdef CONFIG_SMP
 	rq->idle_balance = idle_cpu(cpu);
 	trigger_load_balance(rq);
@@ -4882,6 +5010,10 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 	const struct sched_class *class;
 	struct task_struct *p;
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+	// ghost_pnt_prologue(rq, prev, rf);
+	printk(KERN_INFO "pick next task DFA")
+#endif
 	/*
 	 * Optimization: we know that if all tasks are in the fair class we can
 	 * call that function directly, but only if the @prev task wasn't of a
@@ -5083,6 +5215,7 @@ static void __sched notrace __schedule(bool preempt)
 		__balance_callbacks(rq);
 		raw_spin_unlock_irq(&rq->lock);
 	}
+	schedule_callback(rq); //DFA
 }
 
 void __noreturn do_task_dead(void)
@@ -5161,6 +5294,32 @@ asmlinkage __visible void __sched schedule(void)
 }
 EXPORT_SYMBOL(schedule);
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+void dfa_agent_schedule(void)
+{
+	// const int cpu = raw_smp_processor_id();
+
+	// /* Verify that agent is voluntarily giving up CPU. */
+	// VM_BUG_ON(this_rq()->ghost.agent != current);
+	// VM_BUG_ON(current->state != TASK_RUNNING);
+
+	// VM_BUG_ON(preempt_count() != PREEMPT_DISABLE_OFFSET);
+
+	// __schedule(false);
+
+	// VM_BUG_ON(preempt_count() != PREEMPT_DISABLE_OFFSET);
+	// VM_BUG_ON(this_rq()->ghost.blocked_in_run);
+
+	// /*
+	//  * The agent is per-cpu and must always schedule on that CPU.
+	//  *
+	//  * In other words it cannot __schedule() on one CPU and wake up
+	//  * on a different one.
+	//  */
+	// VM_BUG_ON(this_rq()->cpu != cpu);
+	printk(KERN_INFO "dfa_agent_schedule");
+}
+#endif
 /*
  * synchronize_rcu_tasks() makes sure that no task is stuck in preempted
  * state (have scheduled out non-voluntarily) by making sure that all
@@ -5703,6 +5862,15 @@ static void __setscheduler_params(struct task_struct *p,
 
 	p->policy = policy;
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+	// if (ghost_policy(policy)) {
+	// 	p->rt_priority = 0;
+	// 	p->normal_prio = normal_prio(p);
+	// 	set_load_weight(p, true);
+	// 	return;
+	printk(KERN_INFO "setscheduler_params dfa")
+	}
+#endif
 	if (dl_policy(policy))
 		__setparam_dl(p, attr);
 	else if (fair_policy(policy))
@@ -5739,6 +5907,13 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 	if (keep_boost)
 		p->prio = rt_effective_prio(p, p->prio);
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+	// if (ghost_policy(attr->sched_policy)) {
+	// 	p->sched_class = &ghost_sched_class;
+	// 	return;
+	// }
+	printk(KERN_INFO "set scheduler dfa")
+#endif
 	if (dl_prio(p->prio))
 		p->sched_class = &dl_sched_class;
 	else if (rt_prio(p->prio))
@@ -5795,6 +5970,12 @@ recheck:
 	if (attr->sched_flags & ~(SCHED_FLAG_ALL | SCHED_FLAG_SUGOV))
 		return -EINVAL;
 
+// #ifdef CONFIG_SCHED_CLASS_DFA
+// 	if (dfa_policy(policy)) {
+// 		/* dfa_setscheduler() can fail, so we do all checks there. */
+// 	} else
+// #endif
+// 	{
 	/*
 	 * Valid priorities for SCHED_FIFO and SCHED_RR are
 	 * 1..MAX_USER_RT_PRIO-1, valid priority for SCHED_NORMAL,
@@ -5806,6 +5987,7 @@ recheck:
 	if ((dl_policy(policy) && !__checkparam_dl(attr)) ||
 	    (rt_policy(policy) != (attr->sched_priority != 0)))
 		return -EINVAL;
+	// }
 
 	/*
 	 * Allow unprivileged RT tasks to decrease priority:
@@ -5909,6 +6091,14 @@ recheck:
 		if (attr->sched_flags & SCHED_FLAG_UTIL_CLAMP)
 			goto change;
 
+// #ifdef CONFIG_SCHED_CLASS_DFA
+// 		/*
+// 		 * dfa_setscheduler() is the one-stop-shop for policy
+// 		 * and sched_attr changes.
+// 		 */
+// 		if (dfa_policy(policy))
+// 			goto change;
+// #endif
 		p->sched_reset_on_fork = reset_on_fork;
 		retval = 0;
 		goto unlock;
@@ -5966,6 +6156,19 @@ change:
 		goto unlock;
 	}
 
+#ifdef CONFIG_SCHED_CLASS_DFA
+	printk(KERN_INFO "dfa setscheduler");
+	// if (ghost_policy(policy) || ghost_policy(p->policy)) {
+	// 	int error = ghost_setscheduler(p, rq, attr, &reset_on_fork);
+
+	// 	if (error) {
+	// 		task_rq_unlock(rq, p, &rf);
+	// 		if (pi)
+	// 			cpuset_read_unlock();
+	// 		return error;
+	// 	}
+	// }
+#endif
 	p->sched_reset_on_fork = reset_on_fork;
 	oldprio = p->prio;
 
