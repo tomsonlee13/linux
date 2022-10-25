@@ -4363,7 +4363,7 @@ void schedule_callback(struct rq *rq)
 #ifdef CONFIG_SCHED_CLASS_DFA
 	// if (unlikely(ghost_need_rendezvous(rq)))
 	// 	ghost_wait_for_rendezvous(rq);
-	printk(KERN_INFO "schedule_callback DFA")
+	printk(KERN_INFO "schedule_callback DFA");
 #endif
 }
 /**
@@ -5012,7 +5012,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 
 #ifdef CONFIG_SCHED_CLASS_DFA
 	// ghost_pnt_prologue(rq, prev, rf);
-	printk(KERN_INFO "pick next task DFA")
+	printk(KERN_INFO "pick next task DFA");
 #endif
 	/*
 	 * Optimization: we know that if all tasks are in the fair class we can
@@ -5868,7 +5868,7 @@ static void __setscheduler_params(struct task_struct *p,
 	// 	p->normal_prio = normal_prio(p);
 	// 	set_load_weight(p, true);
 	// 	return;
-	printk(KERN_INFO "setscheduler_params dfa")
+	printk(KERN_INFO "setscheduler_params dfa");
 	}
 #endif
 	if (dl_policy(policy))
@@ -5912,7 +5912,7 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 	// 	p->sched_class = &ghost_sched_class;
 	// 	return;
 	// }
-	printk(KERN_INFO "set scheduler dfa")
+	printk(KERN_INFO "set scheduler dfa");
 #endif
 	if (dl_prio(p->prio))
 		p->sched_class = &dl_sched_class;
