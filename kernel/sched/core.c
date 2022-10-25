@@ -3851,7 +3851,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	}
 
 #ifdef CONFIG_SCHED_CLASS_DFA
-	if (task_has_ghost_policy(p)) {
+	if (task_has_dfa_policy(p)) {
 		// int error;
 
 		// p->sched_class = &ghost_sched_class;
@@ -3860,7 +3860,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 		// 	put_cpu();
 		// 	return error;
 		// }
-		printk(KERN_INFO "task_has_ghost_policy");
+		printk(KERN_INFO "task_has_dfa_policy");
 	} else
 #endif
 	if (dl_prio(p->prio))
