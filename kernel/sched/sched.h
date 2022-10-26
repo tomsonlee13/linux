@@ -148,7 +148,7 @@ struct enclave_work {
 struct dfa_abi;
 
 /*
- * ghost_enclave is a container for the agents, queues and sw_regions
+ * dfa_enclave is a container for the agents, queues and sw_regions
  * that express the scheduling policy for a set of CPUs.
  */
 struct dfa_enclave {
@@ -2089,23 +2089,23 @@ typedef int64_t gtid_t;
 struct ghost_abi {
 	int version;
 	int (*abi_init)(const struct ghost_abi *abi);
-	struct ghost_enclave *
+	struct dfa_enclave *
 		(*create_enclave)(const struct ghost_abi *abi,
 				  struct kernfs_node *dir, ulong id,
 				  const char *cmd_extra);
 	void (*enclave_release)(struct kref *k);
-	void (*enclave_add_cpu)(struct ghost_enclave *e, int cpu);
-	int (*setscheduler)(struct ghost_enclave *e, struct task_struct *p,
+	void (*enclave_add_cpu)(struct dfa_enclave *e, int cpu);
+	int (*setscheduler)(struct dfa_enclave *e, struct task_struct *p,
 			    struct rq *rq, const struct sched_attr *attr,
 			    int *reset_on_fork);
-	int (*fork)(struct ghost_enclave *e, struct task_struct *p);
-	void (*cleanup_fork)(struct ghost_enclave *e, struct task_struct *p);
+	int (*fork)(struct dfa_enclave *e, struct task_struct *p);
+	void (*cleanup_fork)(struct dfa_enclave *e, struct task_struct *p);
 	void (*wait_for_rendezvous)(struct rq *rq);
 	void (*pnt_prologue)(struct rq *rq, struct task_struct *prev,
 			     struct rq_flags *rf);
 	void (*prepare_task_switch)(struct rq *rq, struct task_struct *prev,
 				    struct task_struct *next);
-	void (*tick)(struct ghost_enclave *e, struct rq *rq);
+	void (*tick)(struct dfa_enclave *e, struct rq *rq);
 	void (*switchto)(struct rq *rq, struct task_struct *prev,
 			 struct task_struct *next, int switchto_flags);
 	void (*commit_greedy_txn)(int cpu);
@@ -2170,7 +2170,7 @@ const static struct ghost_abi __##name##_ghost_abi	\
 #define _GHOST_MAYBE_CONST	const
 #endif
 
-_GHOST_MAYBE_CONST DECLARE_PER_CPU_READ_MOSTLY(struct ghost_enclave *, enclave);
+_GHOST_MAYBE_CONST DECLARE_PER_CPU_READ_MOSTLY(struct dfa_enclave *, enclave);
 
 /*
  * Some functions operate on an enclave, but we are unable to easily pass the
@@ -2182,15 +2182,15 @@ _GHOST_MAYBE_CONST DECLARE_PER_CPU_READ_MOSTLY(struct ghost_enclave *, enclave);
  * - may be called from IRQ context.
  * - the target_enclave is bound to the current task
  */
-struct ghost_enclave *get_target_enclave(void);
-struct ghost_enclave *set_target_enclave(struct ghost_enclave *e);
-void restore_target_enclave(struct ghost_enclave *old);
+struct dfa_enclave *get_target_enclave(void);
+struct dfa_enclave *set_target_enclave(struct dfa_enclave *e);
+void restore_target_enclave(struct dfa_enclave *old);
 
 int ghostfs_set_ugid(struct kernfs_node *kn, kuid_t uid, kgid_t gid);
 
 void init_sched_ghost_class(void);
-int ghost_add_cpus(struct ghost_enclave *e, const struct cpumask *cpus);
-void ghost_remove_cpu(struct ghost_enclave *e, int cpu);
+int ghost_add_cpus(struct dfa_enclave *e, const struct cpumask *cpus);
+void ghost_remove_cpu(struct dfa_enclave *e, int cpu);
 
 int64_t ghost_sync_group_cookie(void);
 void ghost_wait_for_rendezvous(struct rq *rq);
@@ -2206,7 +2206,7 @@ void ghost_sched_cleanup_fork(struct task_struct *p);
 
 void ghost_copy_process_epilogue(struct task_struct *p);
 
-static inline int enclave_abi(const struct ghost_enclave *e)
+static inline int enclave_abi(const struct dfa_enclave *e)
 {
 	return e->abi->version;
 }

@@ -2901,7 +2901,7 @@ int select_task_rq(struct task_struct *p, int cpu, int wake_flags)
 	// 		cpu = smp_processor_id();
 	// 	return cpu;
 	printk(KERN_INFO "dfa select task rq");
-	}
+	
 #endif
 	if (p->nr_cpus_allowed > 1 && !is_migration_disabled(p))
 		cpu = p->sched_class->select_task_rq(p, cpu, wake_flags);
