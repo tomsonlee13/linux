@@ -5869,7 +5869,7 @@ static void __setscheduler_params(struct task_struct *p,
 	// 	set_load_weight(p, true);
 	// 	return;
 	printk(KERN_INFO "setscheduler_params dfa");
-	}
+	
 #endif
 	if (dl_policy(policy))
 		__setparam_dl(p, attr);

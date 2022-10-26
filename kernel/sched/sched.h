@@ -2086,11 +2086,11 @@ typedef int64_t gtid_t;
 #define GHOST_TID_SEQNUM_BITS	41
 #define GHOST_TID_PID_BITS	22
 
-struct ghost_abi {
+struct dfa_abi {
 	int version;
-	int (*abi_init)(const struct ghost_abi *abi);
+	int (*abi_init)(const struct dfa_abi *abi);
 	struct dfa_enclave *
-		(*create_enclave)(const struct ghost_abi *abi,
+		(*create_enclave)(const struct dfa_abi *abi,
 				  struct kernfs_node *dir, ulong id,
 				  const char *cmd_extra);
 	void (*enclave_release)(struct kref *k);
@@ -2156,10 +2156,10 @@ struct ghost_abi {
 #endif
 };
 
-#define DEFINE_GHOST_ABI(name) \
-const static struct ghost_abi __##name##_ghost_abi	\
-	__aligned(__alignof__(struct ghost_abi))	\
-	__used __section(".rodata.ghost_abi")
+#define DEFINE_DFA_ABI(name) \
+const static struct dfa_abi __##name##dfa_abi	\
+	__aligned(__alignof__(struct dfa_abi))	\
+	__used __section(".rodata.dfa_abi")
 
 /*
  * We want variables like 'per_cpu(enclave, cpu)' to be immutable in an
@@ -2217,7 +2217,7 @@ void dfa_cpu_idle(void);
 
 unsigned long ghost_cfs_added_load(struct rq *rq);
 int64_t ghost_alloc_gtid(struct task_struct *p);
-void init_ghost_rq(struct ghost_rq *ghost_rq);
+void init_dfa_rq(struct dfa_rq *dfa_rq);
 
 int select_task_rq_ghost(struct task_struct *p, int cpu, int wake_flags);
 
