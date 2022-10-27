@@ -1714,19 +1714,20 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		resched_curr(rq);
 	
 #ifdef CONFIG_SCHED_CLASS_DFA
-	else if (&dfa_agent_sched_class > rq->curr->sched_class &&
-		 is_agent(rq, p)) {
-		/*
-		 * Normally, ghost threads have the lowest
-		 * priority. The ghost agent thread, however, is
-		 * allowed to run in the higher priority ghost
-		 * agent class when it would otherwise be
-		 * preempted by another sched_class. See
-		 * GHOST_SW_BOOST_PRIO for more details.
-		 */
-		printk(KERN_INFO "dfa is agent");
-		resched_curr(rq);
-	}
+	printk(KERN_INFO "dfa is agent");
+	// else if (&dfa_agent_sched_class > rq->curr->sched_class &&
+	// 	 is_agent(rq, p)) {
+	// 	/*
+	// 	 * Normally, ghost threads have the lowest
+	// 	 * priority. The ghost agent thread, however, is
+	// 	 * allowed to run in the higher priority ghost
+	// 	 * agent class when it would otherwise be
+	// 	 * preempted by another sched_class. See
+	// 	 * GHOST_SW_BOOST_PRIO for more details.
+	// 	 */
+		
+	// 	resched_curr(rq);
+	// }
 #endif
 
 	/*
