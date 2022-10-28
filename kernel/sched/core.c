@@ -348,7 +348,7 @@ static enum hrtimer_restart hrtick(struct hrtimer *timer)
 	rq_unlock(rq, &rf);
 
 #ifdef CONFIG_SCHED_CLASS_DFA
-	dfa_tick(rq);
+	dfa_dummy(1);
 #endif
 	return HRTIMER_NORESTART;
 }
@@ -1714,7 +1714,7 @@ void check_preempt_curr(struct rq *rq, struct task_struct *p, int flags)
 		resched_curr(rq);
 	
 #ifdef CONFIG_SCHED_CLASS_DFA
-	printk(KERN_INFO "dfa is agent");
+	dfa_dummy(2);
 	// else if (&dfa_agent_sched_class > rq->curr->sched_class &&
 	// 	 is_agent(rq, p)) {
 	// 	/*
@@ -2384,7 +2384,7 @@ static int __set_cpus_allowed_ptr(struct task_struct *p,
 	// 	ret = -EINVAL;
 	// 	goto out;
 	// }
-	printk(KERN_INFO "dfa affinity");
+	dfa_dummy(3);
 #endif
 	if ((flags & SCA_CHECK) && (p->flags & PF_NO_SETAFFINITY)) {
 		ret = -EINVAL;
@@ -2749,7 +2749,7 @@ void kick_process(struct task_struct *p)
 	// 		resched_cpu_unlocked(cpu);
 	// 	}
 	// }
-	printk(KERN_INFO "dfa kick process");
+	dfa_dummy(4);
 #endif
 	preempt_enable();
 }
@@ -2901,7 +2901,7 @@ int select_task_rq(struct task_struct *p, int cpu, int wake_flags)
 	// 	if (!cpu_online(cpu))
 	// 		cpu = smp_processor_id();
 	// 	return cpu;
-	printk(KERN_INFO "dfa select task rq");
+	dfa_dummy(5);
 	
 #endif
 	if (p->nr_cpus_allowed > 1 && !is_migration_disabled(p))
@@ -3679,7 +3679,7 @@ static void __sched_fork(unsigned long clone_flags, struct task_struct *p)
 	// p->inhibit_task_msgs = 0;
 	// INIT_LIST_HEAD(&p->inhibited_task_list);
 	// sched_ghost_entity_init(p);
-	printk(KERN_INFO "sched forked");
+	dfa_dummy(6);
 #endif
 
 #ifdef CONFIG_PREEMPT_NOTIFIERS
@@ -3852,17 +3852,7 @@ int sched_fork(unsigned long clone_flags, struct task_struct *p)
 	}
 
 #ifdef CONFIG_SCHED_CLASS_DFA
-	if (task_has_dfa_policy(p)) {
-		// int error;
-
-		// p->sched_class = &ghost_sched_class;
-		// error = ghost_sched_fork(p);
-		// if (error) {
-		// 	put_cpu();
-		// 	return error;
-		// }
-		printk(KERN_INFO "task_has_dfa_policy");
-	} else
+	dfa_dummy(7);
 #endif
 	if (dl_prio(p->prio))
 		return -EAGAIN;
@@ -4245,7 +4235,7 @@ prepare_task_switch(struct rq *rq, struct task_struct *prev,
 	kmap_local_sched_out();
 #ifdef CONFIG_SCHED_CLASS_DFA
 	// ghost_prepare_task_switch(rq, prev, next);
-	printk(KERN_INFO "dfa prepare task switch");
+	dfa_dummy(8);
 #endif
 	prepare_task(next);
 	prepare_arch_switch(next);
@@ -4364,7 +4354,7 @@ void schedule_callback(struct rq *rq)
 #ifdef CONFIG_SCHED_CLASS_DFA
 	// if (unlikely(ghost_need_rendezvous(rq)))
 	// 	ghost_wait_for_rendezvous(rq);
-	printk(KERN_INFO "schedule_callback DFA");
+	dfa_dummy(9);
 #endif
 }
 /**
@@ -4680,7 +4670,7 @@ void scheduler_tick(void)
 	perf_event_task_tick();
 
 #ifdef CONFIG_SCHED_CLASS_DFA
-	dfa_tick(rq);
+	dfa_dummy(10);
 #endif
 #ifdef CONFIG_SMP
 	rq->idle_balance = idle_cpu(cpu);
@@ -5013,7 +5003,7 @@ pick_next_task(struct rq *rq, struct task_struct *prev, struct rq_flags *rf)
 
 #ifdef CONFIG_SCHED_CLASS_DFA
 	// ghost_pnt_prologue(rq, prev, rf);
-	printk(KERN_INFO "pick next task DFA");
+	dfa_dummy(11);
 #endif
 	/*
 	 * Optimization: we know that if all tasks are in the fair class we can
@@ -5869,7 +5859,7 @@ static void __setscheduler_params(struct task_struct *p,
 	// 	p->normal_prio = normal_prio(p);
 	// 	set_load_weight(p, true);
 	// 	return;
-	printk(KERN_INFO "setscheduler_params dfa");
+	dfa_dummy(13);
 	
 #endif
 	if (dl_policy(policy))
@@ -5913,7 +5903,7 @@ static void __setscheduler(struct rq *rq, struct task_struct *p,
 	// 	p->sched_class = &ghost_sched_class;
 	// 	return;
 	// }
-	printk(KERN_INFO "set scheduler dfa");
+	dfa_dummy(14);
 #endif
 	if (dl_prio(p->prio))
 		p->sched_class = &dl_sched_class;
@@ -6158,7 +6148,7 @@ change:
 	}
 
 #ifdef CONFIG_SCHED_CLASS_DFA
-	printk(KERN_INFO "dfa setscheduler");
+	dfa_dummy(15);
 	// if (ghost_policy(policy) || ghost_policy(p->policy)) {
 	// 	int error = ghost_setscheduler(p, rq, attr, &reset_on_fork);
 

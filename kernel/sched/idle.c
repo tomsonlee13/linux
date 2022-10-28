@@ -275,7 +275,7 @@ static void do_idle(void)
 
 #ifdef CONFIG_SCHED_CLASS_DFA
 	/* Sets need_resched if rq->ghost.dont_idle_once is set */
-	dfa_cpu_idle();
+	dfa_dummy(30);
 #endif
 
 	while (!need_resched()) {

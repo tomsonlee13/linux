@@ -583,82 +583,6 @@ struct sched_dl_entity {
 #endif
 };
 
-#ifdef CONFIG_SCHED_CLASS_DFA
-struct dfa_queue;
-struct dfa_status_word;
-struct dfa_enclave;
-
-struct sched_dfa_entity {
-	struct list_head run_list;
-	ktime_t last_runnable_at;
-
-	/* The following fields are protected by 'task_rq(p)->lock' */
-	struct dfa_queue *dst_q;
-	struct dfa_status_word *status_word;
-	struct dfa_enclave *enclave;
-	/* See ghost_destroy_enclave() */
-	struct dfa_enclave *__agent_decref_enclave;
-
-	/* For operations with an "implicit" enclave parameter. */
-	struct dfa_enclave *__target_enclave;
-
-	/*
-	 * See also ghost_prepare_task_switch() and ghost_deferred_msgs()
-	 * for flags that are used to defer messages.
-	 */
-	uint blocked_task		: 1;
-	uint yield_task			: 1;
-	uint new_task			: 1;
-	uint agent			: 1;
-	uint bpf_cannot_load_prog	: 1;
-
-	/*
-	 * Locking of 'twi' is awkward:
-	 * 1. wake_up_new_task: both select_task_rq() and task_woken_ghost()
-	 *    are called with 'pi->lock' held.
-	 * 2. ttwu_do_activate: both select_task_rq() and task_woken_ghost()
-	 *    are called with 'pi->lock' held when called via ttwu_queue()
-	 *    (i.e. not a remote wakeup).
-	 * 3. ttwu_do_activate: only 'rq->lock' is held when called via
-	 *    sched_ttwu_pending (i.e. indirectly via ttwu_queue_remote).
-	 *
-	 * (1) and (2) are easy because 'p->pi_lock' is held across both
-	 * select_task_rq() and task_woken_ghost().
-	 *
-	 * (3) is tricky because 'p->pi_lock' is held when select_task_rq()
-	 * is called on the waker's cpu while 'rq->lock' is held when
-	 * task_woken_ghost() is called on the remote cpu. We rely on the
-	 * following constraints:
-	 * a. Once a task is woken up there cannot be another wakeup until
-	 *    it gets oncpu and blocks (thus another wakeup cannot happen
-	 *    until task_woken_ghost() has been called).
-	 * b. flush_smp_call_function_queue()->llist_del_all() pairs with
-	 *    __ttwu_queue_wakelist()->llist_add() to guarantee visiblity
-	 *    of changes made to 'p->ghost.twi' on the waker's cpu when
-	 *    ttwu_do_activate() is called on the remote cpu.
-	 */
-	struct {
-		int last_ran_cpu;
-		int wake_up_cpu;
-		int waker_cpu;
-	} twi;	/* twi = task_wakeup_info */
-
-	struct list_head task_list;
-	struct rcu_head rcu;
-};
-
-struct __kernel_timerfd_dfa {
-	bool enabled;
-	int cpu;
-	uint64_t type;
-	uint64_t cookie;
-};
-
-extern void dfa_commit_greedy_txn(void);
-extern void dfa_timerfd_triggered(struct __kernel_timerfd_dfa *timer);
-
-#endif
-
 #ifdef CONFIG_UCLAMP_TASK
 /* Number of utilization clamp buckets (shorter alias) */
 #define UCLAMP_BUCKETS CONFIG_UCLAMP_BUCKETS_COUNT
@@ -776,12 +700,7 @@ struct task_struct {
 	const struct sched_class	*sched_class;
 	struct sched_entity		se;
 	struct sched_rt_entity		rt;
-#ifdef CONFIG_SCHED_CLASS_DFA
-	int64_t gtid;			/* ghost tid */
-	uint inhibit_task_msgs;		/* don't produce msgs for this task */
-	struct list_head inhibited_task_list;
-	struct sched_dfa_entity dfa;
-#endif
+
 #ifdef CONFIG_CGROUP_SCHED
 	struct task_group		*sched_task_group;
 #endif

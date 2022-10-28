@@ -88,10 +88,10 @@
 // static void ghost_destroy_enclave(struct ghost_enclave *e);
 // static void enclave_release(struct kref *k);
 
-static inline gtid_t gtid(struct task_struct *p)
-{
-	return p->gtid;
-}
+// static inline gtid_t gtid(struct task_struct *p)
+// {
+// 	return p->gtid;
+// }
 
 // /* True if X and Y have the same enclave, including having no enclave. */
 // static bool check_same_enclave(int cpu_x, int cpu_y)

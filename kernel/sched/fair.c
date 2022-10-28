@@ -5714,11 +5714,16 @@ static unsigned long cpu_load_without(struct rq *rq, struct task_struct *p)
 	/* Discount task's util from CPU's util */
 	lsub_positive(&load, task_h_load(p));
 
+	dfa_dummy(100);
+	
 	return load;
 }
 
 static unsigned long cpu_runnable(struct rq *rq)
 {
+
+	dfa_dummy(101);
+
 	return cfs_rq_runnable_avg(&rq->cfs);
 }
 
@@ -5736,6 +5741,9 @@ static unsigned long cpu_runnable_without(struct rq *rq, struct task_struct *p)
 
 	/* Discount task's runnable from CPU's runnable */
 	lsub_positive(&runnable, p->se.avg.runnable_avg);
+
+	dfa_dummy(102);
+
 
 	return runnable;
 }
@@ -7142,6 +7150,9 @@ done: __maybe_unused;
 idle:
 	if (!rf)
 		return NULL;
+#ifdef CONFIG_SCHED_CLASS_DFA
+	dfa_dummy(105);
+#endif
 
 	new_tasks = newidle_balance(rq, rf);
 

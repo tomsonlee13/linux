@@ -1,6 +1,6 @@
 #include <linux/kernfs.h>
 
-#define _GHOST_MAYBE_CONST
+// #define _GHOST_MAYBE_CONST
 #include "sched.h"
 
 // /* The load contribution that CFS sees for a running ghOSt task */
@@ -537,21 +537,21 @@
 // 		e->abi->prepare_task_switch(rq, prev, next);
 // }
 
-void dfa_cpu_idle(void)
-{
-	printk(KERN_INFO "dfa_cpu_idle");
-	// struct ghost_enclave *e;
-	// struct rq *rq = this_rq();
+// void dfa_cpu_idle(void)
+// {
+// 	printk(KERN_INFO "dfa_cpu_idle");
+// 	// struct ghost_enclave *e;
+// 	// struct rq *rq = this_rq();
 
-	// WARN_ON_ONCE(preemptible());
-	// WARN_ON_ONCE(current != rq->idle);
+// 	// WARN_ON_ONCE(preemptible());
+// 	// WARN_ON_ONCE(current != rq->idle);
 
-	// /* rcu_read_lock_sched() not needed; preemption is disabled. */
-	// e = rcu_dereference_sched(per_cpu(enclave, cpu_of(rq)));
+// 	// /* rcu_read_lock_sched() not needed; preemption is disabled. */
+// 	// e = rcu_dereference_sched(per_cpu(enclave, cpu_of(rq)));
 
-	// if (e)
-	// 	e->abi->cpu_idle(rq);
-}
+// 	// if (e)
+// 	// 	e->abi->cpu_idle(rq);
+// }
 
 // unsigned long ghost_cfs_added_load(struct rq *rq)
 // {
@@ -635,9 +635,10 @@ void dfa_cpu_idle(void)
 //  * Called from the timer tick handler after dropping rq->lock.  Called
 //  * regardless of whether a ghost task is current or not.
 //  */
-void dfa_tick(struct rq *rq)
+void dfa_dummy(int i)
 {
-    printk(KERN_INFO "dfa tick");
+	char buf[] = KERN_INFO "dfa_dummy %i!";
+	printk(buf, i);
 	// struct ghost_enclave *e;
 
 	// WARN_ON_ONCE(preemptible());
