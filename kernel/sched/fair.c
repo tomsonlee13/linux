@@ -5683,6 +5683,9 @@ static struct {
 
 static unsigned long cpu_load(struct rq *rq)
 {
+#ifdef CONFIG_SCHED_CLASS_DFA
+	dfa_dummy(1234);
+#endif
 	return cfs_rq_load_avg(&rq->cfs);
 }
 
@@ -5714,15 +5717,18 @@ static unsigned long cpu_load_without(struct rq *rq, struct task_struct *p)
 	/* Discount task's util from CPU's util */
 	lsub_positive(&load, task_h_load(p));
 
+#ifdef CONFIG_SCHED_CLASS_DFA
 	dfa_dummy(100);
+#endif
 	
 	return load;
 }
 
 static unsigned long cpu_runnable(struct rq *rq)
 {
-
+#ifdef CONFIG_SCHED_CLASS_DFA
 	dfa_dummy(101);
+#endif
 
 	return cfs_rq_runnable_avg(&rq->cfs);
 }
@@ -5742,7 +5748,9 @@ static unsigned long cpu_runnable_without(struct rq *rq, struct task_struct *p)
 	/* Discount task's runnable from CPU's runnable */
 	lsub_positive(&runnable, p->se.avg.runnable_avg);
 
+#ifdef CONFIG_SCHED_CLASS_DFA
 	dfa_dummy(102);
+#endif
 
 
 	return runnable;
