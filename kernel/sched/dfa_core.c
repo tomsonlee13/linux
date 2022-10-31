@@ -639,9 +639,9 @@
 //  */
 void dfa_dummy(int i)
 {
-	// char buf[] = KERN_INFO "dfa_dummy %i!";
-	// printk(buf, i);
-	printk(KERN_INFO "dfa_dummy");
+	char buf[] = KERN_INFO "dfa_dummy %i!";
+	printk(buf, i);
+	// printk(KERN_INFO "dfa_dummy");
 	// struct ghost_enclave *e;
 
 	// WARN_ON_ONCE(preemptible());
