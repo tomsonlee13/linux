@@ -582,7 +582,9 @@ struct sched_dl_entity {
 	struct sched_dl_entity *pi_se;
 #endif
 };
-
+#ifdef CONFIG_SCHED_CLASS_GHOST
+extern void dfa_dummy(int i)
+#endif
 #ifdef CONFIG_UCLAMP_TASK
 /* Number of utilization clamp buckets (shorter alias) */
 #define UCLAMP_BUCKETS CONFIG_UCLAMP_BUCKETS_COUNT
@@ -1801,21 +1803,7 @@ extern char *__get_task_comm(char *to, size_t len, struct task_struct *tsk);
 static __always_inline void scheduler_ipi(void)
 {
 #ifdef CONFIG_SCHED_CLASS_DFA
-	/*
-	 * ghost_commit_pending_txn() needs RCU for correct operation so
-	 * make sure RCU is watching in case we interrupted an idle CPU.
-	 *
-	 * Rather than the full irq_enter/irq_exit we do the bare minimum
-	 * required for RCU to avoid pessimizing the common case (all work
-	 * done in the irq return path). Also see the comment below about
-	 * irq_enter/irq_exit.
-	 */
-	// if (is_idle_task(current))
-	// 	rcu_irq_enter();
-	// dfa_commit_greedy_txn();
-	// if (is_idle_task(current))
-	// 	rcu_irq_exit();
-	printk(KERN_INFO "dfa_commit_greedy_txn");
+	dfa_dummy(40);
 #endif
 	/*
 	 * Fold TIF_NEED_RESCHED into the preempt_count; anybody setting
