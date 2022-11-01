@@ -582,7 +582,7 @@ struct sched_dl_entity {
 	struct sched_dl_entity *pi_se;
 #endif
 };
-#ifdef CONFIG_SCHED_CLASS_GHOST
+#ifdef CONFIG_SCHED_CLASS_DFA
 extern void dfa_dummy(int i)
 #endif
 #ifdef CONFIG_UCLAMP_TASK
