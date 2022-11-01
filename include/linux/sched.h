@@ -583,7 +583,7 @@ struct sched_dl_entity {
 #endif
 };
 #ifdef CONFIG_SCHED_CLASS_DFA
-extern void dfa_dummy(int i)
+extern void dfa_dummy(int i);
 #endif
 #ifdef CONFIG_UCLAMP_TASK
 /* Number of utilization clamp buckets (shorter alias) */
