@@ -5684,7 +5684,7 @@ static struct {
 static unsigned long cpu_load(struct rq *rq)
 {
 #ifdef CONFIG_SCHED_CLASS_DFA
-	dfa_dummy(1234);
+	dfa_dummy(20);
 #endif
 	return cfs_rq_load_avg(&rq->cfs);
 }
@@ -5718,7 +5718,7 @@ static unsigned long cpu_load_without(struct rq *rq, struct task_struct *p)
 	lsub_positive(&load, task_h_load(p));
 
 #ifdef CONFIG_SCHED_CLASS_DFA
-	dfa_dummy(100);
+	dfa_dummy(21);
 #endif
 	
 	return load;
@@ -5727,7 +5727,7 @@ static unsigned long cpu_load_without(struct rq *rq, struct task_struct *p)
 static unsigned long cpu_runnable(struct rq *rq)
 {
 #ifdef CONFIG_SCHED_CLASS_DFA
-	dfa_dummy(101);
+	dfa_dummy(22);
 #endif
 
 	return cfs_rq_runnable_avg(&rq->cfs);
@@ -5749,7 +5749,7 @@ static unsigned long cpu_runnable_without(struct rq *rq, struct task_struct *p)
 	lsub_positive(&runnable, p->se.avg.runnable_avg);
 
 #ifdef CONFIG_SCHED_CLASS_DFA
-	dfa_dummy(102);
+	dfa_dummy(23);
 #endif
 
 
@@ -7159,7 +7159,7 @@ idle:
 	if (!rf)
 		return NULL;
 #ifdef CONFIG_SCHED_CLASS_DFA
-	dfa_dummy(105);
+	dfa_dummy(24);
 #endif
 
 	new_tasks = newidle_balance(rq, rf);
