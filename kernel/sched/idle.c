@@ -274,7 +274,7 @@ static void do_idle(void)
 	tick_nohz_idle_enter();
 
 #ifdef CONFIG_SCHED_CLASS_DFA
-	/* Sets need_resched if rq->ghost.dont_idle_once is set */
+
 	dfa_dummy(30);
 #endif
 
